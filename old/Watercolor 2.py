@@ -7,7 +7,7 @@ float_gen = lambda a, b: random.uniform(a, b)
 # https://visme.co/blog/color-combinations/
 # https://www.canva.com/learn/100-color-combinations/
 # Amount of Blocks: 1, 7, 11, 14, 15
-# Number of sides: 8 (RN)
+# Number of sides: 
 
 backColors = [[0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],[.5,.5,.5],[.25,.25,.25],[.75,.75,.75]]
 colorWeights = [5, 4, 3, 3, 2, 1, 1, 1]
@@ -30,30 +30,16 @@ for line in lines:
         curCol.append(int(split[i][4:6],16)/255)
         temp.append(curCol)
     colorScheme.append(temp)
-
-def polygon(sides, radius=1, rotation=0, translation=None, x=0, y=0):
-    one_segment = math.pi * 2 / sides
-
-    points = [
-        (math.sin(one_segment * i + rotation) * radius,
-         math.cos(one_segment * i + rotation) * radius)
-        for i in range(sides)]
-
-    if translation:
-        points = [[sum(pair) for pair in zip(point, translation)]
-                  for point in points]
-
-    octo = []
-    for a in points:
-        octo.append([x + a[0], y + a[1]])
-    return octo
-#    return points
+#print(colorScheme)
+#print(schemeNames)
+#print(random.choices(schemeNames, weights=schemeWeights, k=1))
 
 def octagon(x_orig, y_orig, side):
     x = x_orig
     y = y_orig
     d = side / math.sqrt(2)
     oct = []
+
     oct.append((x, y))
 
     x += side
@@ -88,7 +74,7 @@ def octagon(x_orig, y_orig, side):
 
 def deform(shape, iterations, variance):
     for i in range(iterations):
-        for j in range(len(shape) - 1, 0, -1):
+        for j in range(len(shape)-1, 0, -1):
             midpoint = ((shape[j - 1][0] + shape[j][0])/2 + float_gen(-variance, variance), (shape[j-1][1] + shape[j][1])/2 + float_gen(-variance, variance))
             shape.insert(j, midpoint)
     return shape
@@ -98,15 +84,15 @@ def main():
     width, height = 800, 800
     bgColor = random.choices(backColors, weights=colorWeights, k=1)[0]
     print(bgColor)
-    initial = 100
-    deviation = 150
+    initial = 10
+    deviation = 50
     
     palletName = random.choices(schemeNames, weights=schemeWeights)[0]
     palletIndex = schemeNames.index(palletName)
     colors = colorScheme[palletIndex]
-
-    basedeforms = 0
-    finaldeforms = 0
+    
+    basedeforms = 1
+    finaldeforms = 3
 
     minshapes = 15
     maxshapes = 20
@@ -121,17 +107,17 @@ def main():
     cr.fill()
 
     cr.set_line_width(1)
+#    input()
     g = open('cons.txt')
     cur = int(g.readline())
     g.close()
+#    cur = 5
 #    for p in range(-160, 960, 60):
-    for starty in range(-int(height * .2), int(height * 1.2), 60):
+    for p in range(-int(height * .2), int(height * 1.2), 60):
         curColor = random.choice(colors)
         cr.set_source_rgba(curColor[0], curColor[1], curColor[2], shapealpha)
-        startx = random.randint(-100, width + 100)
-        sideLength = random.randint(50, 250)
-        shape = polygon(6, sideLength, 0, 0, startx, starty)
-#        shape = octagon(startx, starty, sideLength)
+
+        shape = octagon(random.randint(-100, width + 100), p, random.randint(100, 250))
         baseshape = deform(shape, basedeforms, initial)
 
         for j in range(14):
