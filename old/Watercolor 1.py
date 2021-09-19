@@ -1,4 +1,4 @@
-import cairo, sys, copy, math, random
+import cairo, sys, argparse, copy, math, random
 
 float_gen = lambda a, b: random.uniform(a, b)
 
@@ -6,33 +6,26 @@ float_gen = lambda a, b: random.uniform(a, b)
 # Color Scheme:
 # https://visme.co/blog/color-combinations/
 # https://www.canva.com/learn/100-color-combinations/
-# Amount of Blocks: 1, 7, 11, 14, 15
-# Number of sides: 
+# Amount of Blocks: 
+# Shapes
 
-backColors = [[0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],[.5,.5,.5],[.25,.25,.25],[.75,.75,.75]]
-colorWeights = [5, 4, 3, 3, 2, 1, 1, 1]
-schemeNames = []
-colorScheme = []
-schemeWeights = [10,10,10,10,10,10,10,10,10,10,10]
-numberBlocks = [1, 7, 11, 14, 15]
-blockWeight = [1, 7, 1100, 1414, 1015]
-
-f = open("scheme.txt")
-lines= f.readlines()
+colors = [[0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],
+          [0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],
+          [.5,.5,.5],[.25,.25,.25],[.75,.75,.75],
+          [1,1,1],[0,0,0],[1,1,1],[0,0,0],[1,1,1]]
+#print(colors)
+#colors = [[1, 1, 1], [0, 0, 0], [.5, 0, 0], [1, 0, 1]]
+#for i in range(15):
+#    colors.append((float_gen(.4, .75), float_gen(.4, .75), float_gen(.4, .75)))
+"""
+back = open("back.txt", 'r')
+lines = back.readlines()
 for line in lines:
-    split= line.split(',')
-    schemeNames.append(split[0].strip())
-    temp = []
-    for i in range(1, len(split)):
-        curCol = []
-        curCol.append(int(split[i][0:2],16)/255)
-        curCol.append(int(split[i][2:4],16)/255)
-        curCol.append(int(split[i][4:6],16)/255)
-        temp.append(curCol)
-    colorScheme.append(temp)
-#print(colorScheme)
-#print(schemeNames)
-#print(random.choices(schemeNames, weights=schemeWeights, k=1))
+    temp = line.split(" ")
+    t = [float(temp[0]), float(temp[1]), float(temp[2])]
+    colors.append(t)
+#    colors.append(line.split(" "))
+"""
 
 def octagon(x_orig, y_orig, side):
     x = x_orig
@@ -75,52 +68,52 @@ def octagon(x_orig, y_orig, side):
 def deform(shape, iterations, variance):
     for i in range(iterations):
         for j in range(len(shape)-1, 0, -1):
-            midpoint = ((shape[j - 1][0] + shape[j][0])/2 + float_gen(-variance, variance), (shape[j-1][1] + shape[j][1])/2 + float_gen(-variance, variance))
+            midpoint = ((shape[j-1][0] + shape[j][0])/2 + float_gen(-variance, variance), (shape[j-1][1] + shape[j][1])/2 + float_gen(-variance, variance))
             shape.insert(j, midpoint)
     return shape
 
 
 def main():
+#    parser = argparse.ArgumentParser()
+#    parser.add_argument("--width", default=1000, type=int)
+#    parser.add_argument("--height", default=1500, type=int)
+#    parser.add_argument("-i", "--initial", default=120, type=int)
+#    parser.add_argument("-d", "--deviation", default=50, type=int)
+#    parser.add_argument("-bd", "--basedeforms", default=1, type=int)
+#    parser.add_argument("-fd", "--finaldeforms", default=3, type=int)
+#    parser.add_argument("-mins", "--minshapes", default=20, type=int)
+#    parser.add_argument("-maxs", "--maxshapes", default=25, type=int)
+#    parser.add_argument("-sa", "--shapealpha", default=.02, type=float)
+#    args = parser.parse_args()
+
     width, height = 800, 800
-    bgColor = random.choices(backColors, weights=colorWeights, k=1)[0]
-    print(bgColor)
-    initial = 10
+    initial = 120
     deviation = 50
-    
-    palletName = random.choices(schemeNames, weights=schemeWeights)[0]
-    palletIndex = schemeNames.index(palletName)
-    colors = colorScheme[palletIndex]
     
     basedeforms = 1
     finaldeforms = 3
 
-    minshapes = 15
-    maxshapes = 20
+    minshapes = 10
+    maxshapes = 15
 
     shapealpha = .04
 
     ims = cairo.ImageSurface(cairo.FORMAT_ARGB32, width, height)
     cr = cairo.Context(ims)
 
-    cr.set_source_rgb(bgColor[0], bgColor[1], bgColor[2]) # Background between 0 and 1
+    cr.set_source_rgb(.01, .01, .01) # Background between 0 and 1
     cr.rectangle(0, 0, width, height)
     cr.fill()
 
     cr.set_line_width(1)
-#    input()
-    g = open('cons.txt')
-    cur = int(g.readline())
-    g.close()
-#    cur = 5
-#    for p in range(-160, 960, 60):
-    for p in range(-int(height * .2), int(height * 1.2), 60):
-        curColor = random.choice(colors)
-        cr.set_source_rgba(curColor[0], curColor[1], curColor[2], shapealpha)
+    cur = 4
+    for p in range(-int(height*.2), int(height*1.2), 60):
+        cr.set_source_rgba(random.choice(colors)[0], random.choice(colors)[1], random.choice(colors)[2], shapealpha)
 
-        shape = octagon(random.randint(-100, width + 100), p, random.randint(100, 250))
+        shape = octagon(random.randint(-100, width+100), p, random.randint(100, 300))
         baseshape = deform(shape, basedeforms, initial)
 
-        for j in range(14):
+        for j in range(random.randint(minshapes, maxshapes)):
             tempshape = copy.deepcopy(baseshape)
             layer = deform(tempshape, finaldeforms, deviation)
 
@@ -130,15 +123,13 @@ def main():
     
     ims.write_to_png('Examples/watercolor' + str(int(cur)) + '.png')
     cur += 1
-    g = open('cons.txt' , 'w')
-    g.write(str(cur))
-    g.close()
 
 from PIL import Image, ImageDraw
 
 def imageDraw():
     images = []
 
+#    width = 200
     width = 800
     center = width // 2
     color_1 = (0, 0, 0)
@@ -167,4 +158,4 @@ def imageDraw():
 
 #imageDraw()
 
-main()
+#main()
