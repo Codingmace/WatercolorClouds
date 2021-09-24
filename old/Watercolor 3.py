@@ -9,15 +9,17 @@ float_gen = lambda a, b: random.uniform(a, b)
 # Amount of Blocks: 1, 7, 11, 14, 15
 # Number of sides: 8 (RN)
 
-#backColors = [[0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],[.5,.5,.5],[.25,.25,.25],[.75,.75,.75]]
-#colorWeights = [5, 4, 3, 3, 2, 1, 1, 1]
+backColors = [[0,0,0],[1,1,1],[1,0,0],[0,1,0],[0,0,1],[.5,.5,.5],[.25,.25,.25],[.75,.75,.75]]
+colorWeights = [5, 4, 3, 3, 2, 1, 1, 1]
 schemeNames = []
 colorScheme = []
 schemeWeights = [10,10,10,10,40,15,10,10,10,40,10]
 numberBlocks = [1, 7, 11, 14, 15]
 blockWeight = [1, 7, 1100, 1414, 1015]
+
 numberSides = [8, 9, 10, 11, 12, 13, 14]
 SidesWeight = [1000, 200, 1300, 14, 1000, 900, 1400]
+
 
 meta = open("metadata.txt", 'a')
 f = open("scheme.txt")
@@ -34,8 +36,10 @@ for line in lines:
         curCol.append(int(split[i][4:6],16)/255)
         temp.append(curCol)
     colorScheme.append(temp)
-
-
+#for i in range(len(colorScheme)):
+#    print(schemeNames[i], colorScheme[i])
+#print(colorScheme)
+#input()
 def polygon(sides, radius=1, rotation=0, translation=None, x=0, y=0):
     one_segment = math.pi * 2 / sides
 
@@ -48,11 +52,48 @@ def polygon(sides, radius=1, rotation=0, translation=None, x=0, y=0):
         points = [[sum(pair) for pair in zip(point, translation)]
                   for point in points]
 
-    octo = [] # Points adjusted
+    octo = []
     for a in points:
         octo.append([x + a[0], y + a[1]])
-        
     return octo
+#    return points
+
+def octagon(x_orig, y_orig, side):
+    x = x_orig
+    y = y_orig
+    d = side / math.sqrt(2)
+    oct = []
+    oct.append((x, y))
+
+    x += side
+    oct.append((x, y))
+
+    x += d
+    y += d
+    oct.append((x, y))
+
+    y += side
+    oct.append((x, y))
+
+    x -= d
+    y += d
+    oct.append((x, y))
+
+    x -= side
+    oct.append((x, y))
+
+    x -= d
+    y -= d
+    oct.append((x, y))
+
+    y -= side
+    oct.append((x, y))
+
+    x += d
+    y -= d
+    oct.append((x, y))
+
+    return oct
 
 def deform(shape, iterations, variance):
     for i in range(iterations):
@@ -63,18 +104,25 @@ def deform(shape, iterations, variance):
 
 
 def main():
-    width, height = 1200, 1200
+    width, height = 2400, 2400
+    bgColor = random.choices(backColors, weights=colorWeights, k=1)[0]
+#    print(bgColor)
     initial = 100
     deviation = 50
     
     palletName = random.choices(schemeNames, weights=schemeWeights)[0]
     palletIndex = schemeNames.index(palletName)
     colors = colorScheme[palletIndex]
+    print(palletName)
 
     bgColor = random.choices(colors)[0]
     bgIndex = colors.index(bgColor)
+#    print(colors)
+#    print(colors.index(bgColor))
 
     colors.remove((bgColor))
+#    print(colors)
+#    input()
     basedeforms = 1
     finaldeforms = 3
 
@@ -93,12 +141,16 @@ def main():
     g = open('cons.txt')
     cur = int(g.readline())
     g.close()
+#    for p in range(-160, 960, 60):
     for starty in range(-int(height * .2), int(height * 1.2), 60):
         curColor = random.choice(colors)
+#        print(curColor)
+#        input()
         cr.set_source_rgba(curColor[0], curColor[1], curColor[2], shapealpha)
         startx = random.randint(-100, width + 100)
         sideLength = random.randint(50, 250)
-        shape = polygon(8, sideLength, 0, 0, startx, starty)
+        shape = polygon(8, sideLength, 45, 0, startx, starty)
+#        shape = octagon(startx, starty, sideLength)
         baseshape = deform(shape, basedeforms, initial)
 
         for j in range(shapeCount):
